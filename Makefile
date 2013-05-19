@@ -4,9 +4,8 @@ IDIR := include
 ODIR := obj
 ISODIR := isodir
 
-SRCFILES := $(shell find $(SRCDIR) -type f -name "*.[cs]")
-CFILES := $(filter %.c,$(SRCFILES))
-SFILES := $(filter %.s,$(SRCFILES))
+CFILES := $(shell find $(SRCDIR) -type f -name "*.c")
+SFILES := $(shell find $(SRCDIR) -type f -name "*.s")
 OBJFILES := $(patsubst $(SRCDIR)/%.s,$(ODIR)/%.o,$(SFILES)) \
 	    $(patsubst $(SRCDIR)/%.c,$(ODIR)/%.o,$(CFILES))
 
