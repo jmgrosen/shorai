@@ -2,3 +2,8 @@
 # Emacs cruft
 *~
 [#]*[#]
+
+stage2_eltorito
+isodir
+
+.DS_Store

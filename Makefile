@@ -1,23 +1,24 @@
-
 SRCDIR := src
 IDIR := include
 ODIR := obj
 ISODIR := isodir
+TOOLSDIR := tools
 
 CFILES := $(shell find $(SRCDIR) -type f -name "*.c")
-SFILES := $(shell find $(SRCDIR) -type f -name "*.s")
-OBJFILES := $(patsubst $(SRCDIR)/%.s,$(ODIR)/%.o,$(SFILES)) \
+SFILES := $(shell find $(SRCDIR) -type f -name "*.asm")
+OBJFILES := $(patsubst $(SRCDIR)/%.asm,$(ODIR)/%.o,$(SFILES)) \
 	    $(patsubst $(SRCDIR)/%.c,$(ODIR)/%.o,$(CFILES))
 
-TOOLKIT_PREFIX := i586-elf-
-CC := $(TOOLKIT_PREFIX)gcc
-AS := $(TOOLKIT_PREFIX)as
+TOOLKIT_PREFIX := i586-elf
+CC := $(TOOLKIT_PREFIX)-gcc
+AS := nasm
 WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-declarations \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wuninitialized -Wconversion -Wstrict-prototypes
-CFLAGS := -std=gnu99 -ffreestanding -O2 -I$(IDIR)
+CFLAGS := $(WARNINGS) -std=gnu99 -ffreestanding -O2 -I$(IDIR)
 LFLAGS := -ffreestanding -O2 -nostdlib -lgcc $(WARNINGS)
+ASFLAGS := -f elf32
 
 .PHONY: all run clean
 
@@ -28,11 +29,10 @@ run: shorai.iso
 
 shorai.iso: $(ODIR)/shorai.bin
 	mkdir -p $(ISODIR)
-	mkdir -p $(ISODIR)/boot
+	cp -R $(TOOLSDIR)/boot $(ISODIR)
 	cp $(ODIR)/shorai.bin $(ISODIR)/boot/shorai.bin
-	mkdir -p $(ISODIR)/boot/grub
-	cp src/grub.cfg $(ISODIR)/boot/grub/grub.cfg
-	grub-mkrescue -o shorai.iso $(ISODIR)
+	mkisofs -quiet -R -b boot/grub/stage2_eltorito -no-emul-boot \
+	        -boot-load-size 4 --boot-info-table -o shorai.iso $(ISODIR)
 
 $(ODIR)/shorai.bin: $(OBJFILES)
 	$(CC) $(LFLAGS) -T src/linker.ld -o $(ODIR)/shorai.bin $(OBJFILES)
@@ -41,9 +41,9 @@ $(ODIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(ODIR)/%.o: $(SRCDIR)/%.s
+$(ODIR)/%.o: $(SRCDIR)/%.asm
 	@mkdir -p $(@D)
-	$(AS) -o $@ $<
+	$(AS) $(ASFLAGS) -o $@ $<
 
 clean:
 	-$(RM) $(wildcard $(OBJFILES) shorai.iso $(ODIR)/shorai.bin)

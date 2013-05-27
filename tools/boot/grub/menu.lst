@@ -1,0 +1,11 @@
+default 0
+
+timeout 0
+
+hiddenmenu
+
+title Shorai
+kernel /boot/shorai.bin
+
+quiet
+
