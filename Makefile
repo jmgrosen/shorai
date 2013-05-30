@@ -1,23 +1,23 @@
 SRCDIR := src
-IDIR := include
 ODIR := obj
 ISODIR := isodir
 TOOLSDIR := tools
 
-CFILES := $(shell find $(SRCDIR) -type f -name "*.c")
-SFILES := $(shell find $(SRCDIR) -type f -name "*.asm")
-OBJFILES := $(patsubst $(SRCDIR)/%.asm,$(ODIR)/%.o,$(SFILES)) \
-	    $(patsubst $(SRCDIR)/%.c,$(ODIR)/%.o,$(CFILES))
+RSFILES := $(shell find $(SRCDIR) -type f -name "*.rs")
+RSKERNEL := $(SRCDIR)/kernel.rc
+BOOTASM := $(SRCDIR)/boot.asm
+OBJFILES := $(ODIR)/boot.o $(ODIR)/kernel.o
+
+# Copyright (c) 2013 John Grosen
+# Licensed under the terms described in the LICENSE file in the root of this repository
 
 TOOLKIT_PREFIX := i586-elf
 CC := $(TOOLKIT_PREFIX)-gcc
+LD := $(TOOLKIT_PREFIX)-ld
+RUSTC := rustc
 AS := nasm
-WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-            -Wwrite-strings -Wmissing-declarations \
-            -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-            -Wuninitialized -Wconversion -Wstrict-prototypes
-CFLAGS := $(WARNINGS) -std=gnu99 -ffreestanding -O2 -I$(IDIR)
-LFLAGS := -ffreestanding -O2 -nostdlib -lgcc $(WARNINGS)
+RSFLAGS := -O --target i386-intel-linux --lib -L $(SRCDIR)
+LFLAGS := -melf_i386
 ASFLAGS := -f elf32
 
 .PHONY: all run clean
@@ -34,12 +34,12 @@ shorai.iso: $(ODIR)/shorai.bin
 	mkisofs -quiet -R -b boot/grub/stage2_eltorito -no-emul-boot \
 	        -boot-load-size 4 --boot-info-table -o shorai.iso $(ISODIR)
 
-$(ODIR)/shorai.bin: $(OBJFILES)
-	$(CC) $(LFLAGS) -T src/linker.ld -o $(ODIR)/shorai.bin $(OBJFILES)
+$(ODIR)/shorai.bin: $(OBJFILES) src/linker.ld
+	$(LD) $(LFLAGS) -T src/linker.ld -o $(ODIR)/shorai.bin $(OBJFILES)
 
-$(ODIR)/%.o: $(SRCDIR)/%.c
+$(ODIR)/kernel.o: $(SRCDIR)/kernel.rc $(RSFILES)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(RUSTC) $(RSFLAGS) -c $< -o $@
 
 $(ODIR)/%.o: $(SRCDIR)/%.asm
 	@mkdir -p $(@D)

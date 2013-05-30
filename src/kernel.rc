@@ -1,0 +1,22 @@
+// Copyright (c) 2013 John Grosen
+// Licensed under the terms described in the LICENSE file in the root of this repository
+
+#[link(name = "shorai",
+       vers = "0.0.1",
+       uuid = "8b6016a2-18fb-45a2-a288-70bebd45260f",
+       url = "https://github.com/jmgrosen/shorai")];
+
+#[comment = "An amazing OS in Rust"];
+#[license = "MIT"];
+
+#[no_std];
+#[no_core];
+
+mod zero;
+
+pub mod util;
+pub mod main;
+#[path="core/mod.rs"]
+pub mod core;
+pub mod vga;
+pub mod term;

@@ -1,11 +1,9 @@
 default 0
 
-timeout 0
+timeout 10
 
-hiddenmenu
 
 title Shorai
 kernel /boot/shorai.bin
 
-quiet
 
