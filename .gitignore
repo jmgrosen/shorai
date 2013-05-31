@@ -5,5 +5,7 @@
 
 stage2_eltorito
 isodir
+obj
+*.iso
 
 .DS_Store

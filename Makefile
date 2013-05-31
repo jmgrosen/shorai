@@ -12,7 +12,6 @@ OBJFILES := $(ODIR)/boot.o $(ODIR)/kernel.o
 # Licensed under the terms described in the LICENSE file in the root of this repository
 
 TOOLKIT_PREFIX := i586-elf
-CC := $(TOOLKIT_PREFIX)-gcc
 LD := $(TOOLKIT_PREFIX)-ld
 RUSTC := rustc
 AS := nasm
